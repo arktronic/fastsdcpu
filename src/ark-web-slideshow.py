@@ -52,7 +52,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
                 });
             }
             showNewImage();
-            setInterval(showNewImage, 300000);
+            setInterval(showNewImage, 600000);
         </script>
     </head>
     <body style="background-color: black; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; margin: 0; overflow: hidden;">
@@ -83,6 +83,9 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             steps = int(query_components["steps"][0])
         
         lcm_diffusion_setting = LCMDiffusionSetting()
+        lcm_diffusion_setting.use_offline_model = True
+        lcm_diffusion_setting.use_safety_checker = True
+        lcm_diffusion_setting.use_tiny_auto_encoder = True
         lcm_diffusion_setting.openvino_lcm_model_id = "rupeshs/LCM-dreamshaper-v7-openvino"
         lcm_diffusion_setting.prompt = prompt
         lcm_diffusion_setting.negative_prompt = "ugly, deformed, duplicate, frame"
