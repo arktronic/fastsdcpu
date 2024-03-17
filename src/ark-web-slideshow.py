@@ -81,11 +81,11 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             prompt = query_components["prompt"][0]
         if "steps" in query_components:
             steps = int(query_components["steps"][0])
-        
+
         lcm_diffusion_setting = LCMDiffusionSetting()
         lcm_diffusion_setting.use_offline_model = True
         lcm_diffusion_setting.use_safety_checker = True
-        lcm_diffusion_setting.use_tiny_auto_encoder = True
+        lcm_diffusion_setting.use_tiny_auto_encoder = False
         lcm_diffusion_setting.openvino_lcm_model_id = "rupeshs/LCM-dreamshaper-v7-openvino"
         lcm_diffusion_setting.prompt = prompt
         lcm_diffusion_setting.negative_prompt = "ugly, deformed, duplicate, frame"
