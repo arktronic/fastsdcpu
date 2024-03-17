@@ -55,7 +55,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             setInterval(showNewImage, 600000);
         </script>
     </head>
-    <body style="background-color: black; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; margin: 0; overflow: hidden;">
+    <body style="background-color: black; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; margin: 0; overflow: hidden; cursor: none;">
         <img id="mainimage" style="height: 100%;" />
     </body>
 </html>
