@@ -2,18 +2,15 @@ import http.server
 import socketserver
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
-
+import tempfile
+from pathlib import Path
 
 from backend.lcm_text_to_image import LCMTextToImage
 from backend.models.lcmdiffusion_setting import LCMLora, LCMDiffusionSetting
-from constants import DEVICE, LCM_DEFAULT_MODEL_OPENVINO
+from constants import DEVICE
 from time import perf_counter
 import numpy as np
 from cv2 import imencode
-import base64
-from backend.device import get_device_name
-from constants import APP_VERSION
-from backend.device import is_openvino_device
 
 from PIL import Image
 import onnxruntime
@@ -27,6 +24,8 @@ lcm_lora = LCMLora(
     lcm_lora_id="latent-consistency/lcm-lora-sdv1-5",
 )
 
+lastimagefile = Path(tempfile.gettempdir()) / 'web-slideshow-last-image.png'
+print('Last image file name: ' + str(lastimagefile))
 
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -37,6 +36,14 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
     <head>
         <title>SD Slideshow</title>
         <script type="text/javascript">
+            function showLastImage() {
+                fetch("last.png").then(async (response) => {
+                    if (response.ok) {
+                        const blobData = await response.blob();
+                        document.getElementById("mainimage").src = URL.createObjectURL(blobData);
+                    }
+                });
+            }
             function showNewImage() {
                 const prompts = [
                     "Verdant valley with wildflowers, winding path, oil painting, impasto",
@@ -51,6 +58,7 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
                     }
                 });
             }
+            showLastImage();
             showNewImage();
             setInterval(showNewImage, 600000);
         </script>
@@ -65,6 +73,14 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(bytes(response, "utf8"))
             return
+        if parsed_url.path == '/last.png' and lastimagefile.is_file():
+            with lastimagefile.open('rb') as f:
+                byte_data = f.read()
+                self.send_response(200)
+                self.send_header("Content-type", "image/png")
+                self.end_headers()
+                self.wfile.write(byte_data)
+                return
         if parsed_url.path != '/img.png':
             self.send_response(404)
             self.end_headers()
@@ -140,6 +156,9 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         image_arr = np.asarray(upscaled_image)[:, :, ::-1]
         _, byte_data = imencode(".png", image_arr)
+
+        with lastimagefile.open('wb') as f:
+            f.write(byte_data)
 
         self.wfile.write(byte_data)
 
